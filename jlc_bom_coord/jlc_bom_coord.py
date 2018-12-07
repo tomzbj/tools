@@ -1,9 +1,12 @@
 import csv
+import re
 
 csvfile = open('pcp_rep.rpt')
 reader = csv.reader(csvfile)
-csvfile2 = open('__pcp_rep_jlc.csv', 'w', newline='\n')
+csvfile2 = open('__coord.csv', 'w', newline='\n')
 writer = csv.writer(csvfile2, dialect='excel') 
+csvfile3 = open('__bom.csv', 'w', newline='\n')
+writer3 = csv.writer(csvfile3, dialect='excel') 
 
 reader = list(reader)
 
@@ -41,6 +44,7 @@ footprint_table = {
     'OSCCC250X320X100': 'SMD-3225',
     'OSCCC250X320X100A': 'SMD-3225',
     'OSCCC250X320X110': 'SMD-3225',
+    'OSCCC250X320X110_X': 'SMD-3225',
     'OSCCC320X500X110': 'SMD-5032',
     'OSCCC320X500X150': 'SMD-5032',
     'OSCSF320X150X080-2': 'SMD-3215',
@@ -107,13 +111,32 @@ footprint_table = {
 
 reader.sort(key = lambda x:x[2])
 
+line2 = ['','','']
+old_line = ['','','']
+list2 = []
 for line in reader:
     del line[1], line[2]        # 删除不需要的两列
     line[6] = 'T' if line[6] == 'NO' else 'B'
     if line[2] in footprint_table.keys():
         line[2] = footprint_table[line[2]]
+    line[0] = re.sub('.*_', '', line[0])
+    line[1] = re.sub('k', 'K', line[1])
     print(line) 
     writer.writerow(line)
 
+    if old_line[1] == line[1] and old_line[2] == line[2]:
+        line2[0] += (' ' + line[0])
+    else:
+        list2.append(line2)
+        line2 = [line[0], line[1], line[2]]
+    old_line = line 
+
+list2.append(line2)
+list2[0] = ['Designator', 'Comment', 'Footprint']
+print(list2)
+for line in list2:
+    writer3.writerow(line)
+
 csvfile.close() 
 csvfile2.close() 
+csvfile3.close() 
