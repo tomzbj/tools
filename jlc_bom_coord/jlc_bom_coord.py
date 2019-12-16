@@ -1,12 +1,16 @@
 import csv
 import re
+import openpyxl
+import openpyxl.utils
 
 csvfile = open('pcp_rep.rpt')
 reader = csv.reader(csvfile)
-csvfile2 = open('__coord.csv', 'w', newline='\n')
-writer = csv.writer(csvfile2, dialect='excel') 
-csvfile3 = open('__bom.csv', 'w', newline='\n')
-writer3 = csv.writer(csvfile3, dialect='excel') 
+
+wb_bom = openpyxl.Workbook()
+ws_bom = wb_bom.active
+
+wb_coord = openpyxl.Workbook()
+ws_coord = wb_coord.active
 
 reader = list(reader)
 
@@ -16,7 +20,8 @@ del reader[0:5]
 # 按JLC的格式修改表头
 line = ['Designator', 'Comment', 'Footprint', 'Mid X', 'Mid Y', 'Rotation', 'Layer'] 
 print(line)
-writer.writerow(line)
+# writer.writerow(line)
+ws_coord.append(line)
 
 # 查找替换表, 请按需自行修改
 footprint_table = {
@@ -61,7 +66,7 @@ footprint_table = {
     'RESC2012': 'R0805',
     'RESC3216': 'R1206',
     'RESC6432': 'R2512',
-    'RESCA2V80P160X320X70-8': 'R0603*4',
+    'RESCA2V80P160X320X70-8': 'R0603_x4',
     'SOIC127P1028X265-20': 'SOIC-20',
     'SOIC127P1030X265-16': 'SOIC-16',
     'SOIC127P1030X265-18': 'SOIC-18',
@@ -122,7 +127,7 @@ for line in reader:
     line[0] = re.sub('.*_', '', line[0])
     line[1] = re.sub('k', 'K', line[1])
     print(line) 
-    writer.writerow(line)
+    ws_coord.append(line)
 
     if old_line[1] == line[1] and old_line[2] == line[2]:
         line2[0] += (' ' + line[0])
@@ -135,8 +140,9 @@ list2.append(line2)
 list2[0] = ['Designator', 'Comment', 'Footprint']
 print(list2)
 for line in list2:
-    writer3.writerow(line)
+    ws_bom.append(line)
 
 csvfile.close() 
-csvfile2.close() 
-csvfile3.close() 
+
+wb_bom.save("__bom.xlsx")
+wb_coord.save("__coord.xlsx")
