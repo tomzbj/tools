@@ -2,3 +2,4 @@
 *.o
 /jlc_bom_coord/*.csv
 /jlc_bom_coord/*.rpt
+*~
